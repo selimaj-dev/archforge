@@ -116,9 +116,7 @@ fn parse_operand(pair: Pair<Rule>) -> Operand {
     match pair.as_rule() {
         Rule::number => Operand::Number(pair.as_str().parse().unwrap()),
 
-        Rule::global_reg | Rule::local_reg => Operand::Reg(parse_reg(pair)),
-
-        Rule::reg => Operand::Reg(parse_reg(pair.into_inner().next().unwrap())),
+        Rule::reg | Rule::global_reg | Rule::local_reg => Operand::Reg(parse_reg(pair)),
 
         Rule::pointer_expr => {
             let inner = pair.into_inner().next().unwrap();
@@ -134,6 +132,8 @@ fn parse_reg(pair: Pair<Rule>) -> Reg {
         Rule::global_reg => Reg::Global(pair.as_str()[1..].to_string()),
 
         Rule::local_reg => Reg::Local(pair.as_str()[1..].to_string()),
+
+        Rule::reg => parse_reg(pair.into_inner().next().unwrap()),
 
         _ => unreachable!(),
     }
