@@ -118,6 +118,8 @@ fn parse_operand(pair: Pair<Rule>) -> Operand {
 
         Rule::global_reg | Rule::local_reg => Operand::Reg(parse_reg(pair)),
 
+        Rule::reg => Operand::Reg(parse_reg(pair.into_inner().next().unwrap())),
+
         Rule::pointer_expr => {
             let inner = pair.into_inner().next().unwrap();
             Operand::Pointer(Box::new(parse_operand(inner)))
