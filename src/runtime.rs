@@ -14,6 +14,7 @@ pub struct Function {
 pub struct Runtime {
     pub registry: Registry,
     pub functions: HashMap<String, Function>,
+    pub opcodes: HashMap<String, Box<dyn Fn(Vec<String>)>>,
 }
 
 impl Registry {
@@ -27,6 +28,7 @@ impl Runtime {
         Self {
             registry: Registry::new(),
             functions: HashMap::new(),
+            opcodes: HashMap::new(),
         }
     }
 }
@@ -53,7 +55,12 @@ impl Runtime {
         for statement in statements {
             match statement {
                 Statement::Instruction(inst) => {
-                    println!("{inst:#?}");
+                    let op = self
+                        .opcodes
+                        .get(&inst.opcode.to_lowercase())
+                        .expect("Invalid opcode");
+
+                    (op)(vec![]);
                 }
                 _ => {}
             }
