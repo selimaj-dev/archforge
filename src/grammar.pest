@@ -1,0 +1,92 @@
+WHITESPACE = _{ (" " | "\t" | NEWLINE | COMMENT)+ }
+COMMENT    = _{ "//" ~ (!NEWLINE ~ ANY)* }
+
+program = { SOI ~ statement* ~ EOI }
+
+statement = _{
+    function_def
+  | pointer_assign
+  | instruction
+  | function_call
+}
+
+/// //
+// FUNCTIONS
+/// //
+
+function_def = {
+    ident ~ "(" ~ param_list? ~ ")" ~ block
+}
+
+param_list = {
+    ident ~ ("," ~ ident)*
+}
+
+block = {
+    "{" ~ statement* ~ "}"
+}
+
+/// //
+// INSTRUCTIONS
+/// //
+
+instruction = {
+    opcode ~ operand_list?
+}
+
+operand_list = {
+    operand ~ ("," ~ operand)*
+}
+
+/// //
+// POINTERS
+/// //
+
+pointer_assign = {
+    reg ~ "->" ~ reg
+}
+
+pointer_expr = {
+    "->" ~ reg
+}
+
+/// //
+// FUNCTION CALLS
+/// //
+
+function_call = {
+    ident ~ "(" ~ arg_list? ~ ")"
+}
+
+arg_list = {
+    operand ~ ("," ~ operand)*
+}
+
+/// //
+// OPERANDS
+/// //
+
+operand = _{
+    pointer_expr
+  | reg
+  | number
+}
+
+global_reg = { "$" ~ ident }
+local_reg  = { "%" ~ ident }
+
+reg = { local_reg | global_reg }
+
+number = @{
+    "-"? ~ ASCII_DIGIT+
+}
+
+/// //
+// BASICS
+/// //
+
+opcode = @{ ASCII_ALPHA_UPPER+ }
+
+ident = @{
+    (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")*
+}
