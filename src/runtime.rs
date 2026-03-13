@@ -1,10 +1,16 @@
 use std::{collections::HashMap, path::Path};
 
-use crate::parser::{self, ast::Statement};
+use crate::parser::{
+    self,
+    ast::{Operand, Statement},
+};
 
 #[derive(Debug, Clone)]
-pub struct Registry {}
+pub struct Registry {
+    pub registry: HashMap<String, String>,
+}
 
+#[derive(Debug, Clone)]
 pub struct Function {
     pub registry: Registry,
     pub body: Vec<Statement>,
@@ -14,12 +20,14 @@ pub struct Function {
 pub struct Runtime {
     pub registry: Registry,
     pub functions: HashMap<String, Function>,
-    pub opcodes: HashMap<String, Box<dyn Fn(Vec<String>)>>,
+    pub opcodes: HashMap<String, Box<dyn Fn(Vec<Operand>)>>,
 }
 
 impl Registry {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            registry: HashMap::new(),
+        }
     }
 }
 
@@ -58,21 +66,34 @@ impl Runtime {
                     let op = self
                         .opcodes
                         .get(&inst.opcode.to_lowercase())
-                        .expect("Invalid opcode");
+                        .expect(&format!("Invalid opcode: {}", inst.opcode));
 
-                    (op)(vec![]);
+                    (op)(inst.operands);
                 }
                 _ => {}
             }
         }
     }
 
-    pub fn call_function(&mut self, fn_name: &str, params: Vec<u8>) {
+    pub fn call_function(&mut self, fn_name: &str, params: Vec<Operand>) {
         let f = self
             .functions
-            .get(fn_name)
-            .expect("Function does not exist");
+            .get_mut(fn_name)
+            .expect(&format!("Function does not exist: {}", fn_name))
+            .clone();
 
-        self.execute(f.body.clone(), f.registry.clone());
+        self.execute(f.body, f.registry);
+    }
+
+    pub fn register_opcode(&mut self, opcode: &str, f: impl Fn(Vec<Operand>) + 'static) {
+        self.opcodes.insert(opcode.to_lowercase(), Box::new(f));
+    }
+}
+
+impl Registry {
+    pub fn params(&mut self, params: Vec<String>) {
+        for (v, p) in self.registry.values_mut().zip(params) {
+            *v = p;
+        }
     }
 }
