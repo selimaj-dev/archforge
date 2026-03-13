@@ -1,2 +1,29 @@
-# archforge
-A emulator language library 
+# ArchForge
+
+A emulator language library
+
+### Syntax
+
+```asm
+init() {
+
+    $link -> $counter
+
+}
+
+increment(x) {
+
+    ADD $counter, %x, $counter
+    MOV $counter, %r
+
+}
+
+main() {
+
+    increment(5)
+    increment(3)
+
+    PRINT $counter, -> $link
+
+}
+```
